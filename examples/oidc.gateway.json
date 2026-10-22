@@ -1,0 +1,32 @@
+{
+  "revision": 1,
+  "oidc": {
+    "issuer": "https://identity.example/realms/gateway",
+    "audience": "general-ai-gateway",
+    "required_scopes": [
+      "gateway:invoke"
+    ],
+    "allow_api_keys": false
+  },
+  "tenants": {
+    "production": {
+      "oauth_client_ids": [
+        "my-service-client"
+      ],
+      "artifacts": [
+        "production-chat"
+      ],
+      "requests_per_minute": 120,
+      "daily_requests": 10000
+    }
+  },
+  "artifacts": {
+    "production-chat": {
+      "kind": "chat",
+      "url": "https://models.example/v1/chat/completions",
+      "credential_env": "MODEL_SERVICE_KEY",
+      "upstream_model": "your-deployed-model",
+      "owner": "Rajarshi"
+    }
+  }
+}

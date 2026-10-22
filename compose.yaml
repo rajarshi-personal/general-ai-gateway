@@ -1,0 +1,45 @@
+services:
+  gateway:
+    build: .
+    ports: ["127.0.0.1:8080:8080"]
+    env_file: ./config/demo.env
+    environment:
+      GENERAL_AI_GATEWAY_CONFIG: /app/config/gateway.json
+      GENERAL_AI_GATEWAY_REDIS_URL: redis://redis:6379/0
+      GENERAL_AI_GATEWAY_REQUIRE_REDIS: "true"
+      GENERAL_AI_GATEWAY_ALLOWED_HOSTS: mock
+      GENERAL_AI_GATEWAY_ALLOW_HTTP: "true"
+    volumes: ["./config:/app/config:ro"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      mock:
+        condition: service_started
+    read_only: true
+    tmpfs: ["/tmp"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health/ready')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+  mock:
+    build: .
+    command: ["uvicorn", "examples.mock:app", "--host", "0.0.0.0", "--port", "9000"]
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: ["redis-data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+volumes:
+  redis-data:
