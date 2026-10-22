@@ -12,3 +12,5 @@ config/gateway.json
 .coverage
 
 .verification/
+
+/handoff_23Oct.md
